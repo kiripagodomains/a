@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="ja" class="h-full bg-slate-950 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電脳音響 ＆ 幽玄和音生成器 // CYBER & CHILL SYNTHESIS</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@400;700;900&family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            black: '#05050b',
+                            dark: '#0c0c16',
+                            panel: '#131322',
+                            cyan: '#00f3ff',
+                            pink: '#ff0055',
+                            yellow: '#ffee00',
+                            purple: '#bf00ff',
+                        },
+                        wabon: {
+                            bg: '#141a15',
+                            dark: '#1c241e',
+                            panel: '#242e27',
+                            moss: '#4a6b52',
+                            uguisu: '#92a368',
+                            sakura: '#e8a7b8',
+                            wood: '#3a2e2b',
+                            gold: '#d4af37',
+                            paper: '#f2ebd9'
+                        }
+                    },
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        jp: ['Noto Sans JP', 'sans-serif'],
+                        serif: ['Noto Serif JP', 'serif'],
+                        mono: ['Share Tech Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* サイバーパンク 走査線 */
+        .scanlines {
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0, 0, 0, 0.4) 50%,
+                rgba(0, 0, 0, 0.4)
+            );
+            background-size: 100% 4px;
+        }
+
+        /* 和風 和紙 / ノイズ テクスチャ */
+        .washi-bg {
+            background-image: radial-gradient(rgba(242, 235, 217, 0.04) 1px, transparent 0);
+            background-size: 8px 8px;
+        }
+
+        /* ネオン発光 (サイバー) */
+        .glow-cyan {
+            box-shadow: 0 0 12px rgba(0, 243, 255, 0.5), inset 0 0 6px rgba(0, 243, 255, 0.3);
+            text-shadow: 0 0 8px rgba(0, 243, 255, 0.8);
+        }
+        .glow-pink {
+            box-shadow: 0 0 12px rgba(255, 0, 85, 0.5), inset 0 0 6px rgba(255, 0, 85, 0.3);
+            text-shadow: 0 0 8px rgba(255, 0, 85, 0.8);
+        }
+
+        /* 和風 柔らかい発光 */
+        .glow-sakura {
+            box-shadow: 0 0 12px rgba(232, 167, 184, 0.4), inset 0 0 4px rgba(232, 167, 184, 0.2);
+        }
+        .glow-gold {
+            box-shadow: 0 0 12px rgba(212, 175, 55, 0.4), inset 0 0 4px rgba(212, 175, 55, 0.2);
+        }
+
+        /* アクティブ ステップ */
+        .step-active-cyan { background-color: #00f3ff !important; box-shadow: 0 0 10px #00f3ff; border-color: #fff !important; }
+        .step-active-pink { background-color: #ff0055 !important; box-shadow: 0 0 10px #ff0055; border-color: #fff !important; }
+        .step-active-yellow { background-color: #ffee00 !important; box-shadow: 0 0 10px #ffee00; border-color: #fff !important; }
+        .step-active-purple { background-color: #bf00ff !important; box-shadow: 0 0 10px #bf00ff; border-color: #fff !important; }
+
+        .step-active-sakura { background-color: #e8a7b8 !important; box-shadow: 0 0 10px #e8a7b8; border-color: #fff !important; }
+        .step-active-uguisu { background-color: #92a368 !important; box-shadow: 0 0 10px #92a368; border-color: #fff !important; }
+        .step-active-gold { background-color: #d4af37 !important; box-shadow: 0 0 10px #d4af37; border-color: #fff !important; }
+        .step-active-moss { background-color: #4a6b52 !important; box-shadow: 0 0 10px #4a6b52; border-color: #fff !important; }
+
+        .step-current { border-color: #ffffff !important; transform: scale(1.1); z-index: 10; }
+
+        /* カスタム スライダー */
+        input[type=range] {
+            -webkit-appearance: none;
+            border-radius: 4px;
+            height: 6px;
+        }
+        
+        /* サイバースライダー */
+        .mode-cyber input[type=range] { background: #0c0c16; border: 1px solid #00f3ff44; }
+        .mode-cyber input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 16px; width: 10px; border-radius: 2px;
+            background: #00f3ff; box-shadow: 0 0 8px #00f3ff; cursor: pointer;
+        }
+
+        /* 和風スライダー */
+        .mode-wabon input[type=range] { background: #1c241e; border: 1px solid #92a36844; }
+        .mode-wabon input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 16px; width: 12px; border-radius: 3px;
+            background: #e8a7b8; box-shadow: 0 0 8px #e8a7b8; cursor: pointer;
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #05050b; }
+        ::-webkit-scrollbar-thumb { background: #4a6b52; border-radius: 3px; }
+    </style>
+</head>
+<body id="app-body" class="mode-cyber h-full bg-cyber-black text-slate-200 font-jp select-none overflow-x-hidden flex flex-col transition-colors duration-700">
+
+    <!-- 背景エフェクト（サイバー用走査線 / 和風用和紙ノイズ） -->
+    <div id="bg-effect" class="pointer-events-none fixed inset-0 scanlines z-50 opacity-40 transition-all duration-700"></div>
+
+    <!-- HUD ヘッダー -->
+    <header id="app-header" class="border-b border-cyber-cyan/30 bg-cyber-dark/90 backdrop-blur-md px-4 py-3 flex flex-wrap items-center justify-between gap-4 z-40 sticky top-0 transition-colors duration-700">
+        
+        <div class="flex items-center gap-3">
+            <div id="status-dot" class="w-3.5 h-3.5 rounded-full bg-cyber-pink animate-ping"></div>
+            <div>
+                <h1 id="app-title" class="font-orbitron font-black text-lg sm:text-2xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyber-cyan via-cyber-pink to-cyber-yellow">
+                    CYBER_SYNTH <span class="font-jp text-xs text-cyber-cyan font-normal ml-2">超電脳音響構造体</span>
+                </h1>
+            </div>
+        </div>
+
+        <!-- ★ モード切り替えスイッチ (サイバー ⇄ ゆったり和音) ★ -->
+        <div class="flex items-center gap-2 bg-black/40 border border-slate-700 p-1.5 rounded-full shadow-inner">
+            <button id="btn-mode-cyber" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300 bg-cyber-cyan text-cyber-black shadow-lg">
+                <i class="fa-solid fa-microchip"></i> サイバーパンク
+            </button>
+            <button id="btn-mode-wabon" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300 text-slate-400 hover:text-wabon-sakura">
+                <i class="fa-solid fa-fan"></i> ゆったり和音 (Chill Lo-Fi)
+            </button>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <!-- プリセット選択 -->
+            <div id="preset-wrapper" class="flex items-center gap-2 bg-cyber-panel border border-cyber-cyan/50 px-3 py-1.5 rounded-lg glow-cyan transition-all duration-500">
+                <i id="preset-icon" class="fa-solid fa-compact-disc text-cyber-cyan text-sm"></i>
+                <span class="text-xs text-slate-300 font-bold whitespace-nowrap">プリセット:</span>
+                <select id="preset-select" class="bg-black/50 text-cyber-cyan font-jp font-bold text-xs sm:text-sm px-2 py-1 rounded border border-cyber-cyan/40 focus:outline-none cursor-pointer">
+                    <!-- JSでモードに応じて動的生成 -->
+                </select>
+            </div>
+
+            <!-- 音声を起動ボタン -->
+            <button id="audio-init-btn" class="font-jp font-bold text-xs bg-cyber-cyan/20 border border-cyber-cyan text-cyber-cyan hover:bg-cyber-cyan hover:text-cyber-black transition px-3.5 py-2 rounded glow-cyan flex items-center gap-1.5">
+                <i class="fa-solid fa-power-off"></i> <span id="audio-status">音声起動</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- ★ AI Sound Bot パネル (AI音響自動解析ボット) ★ -->
+    <div id="ai-bot-panel" class="max-w-7xl w-full mx-auto px-3 sm:px-5 pt-3 z-30">
+        <div class="bg-black/80 border border-cyber-cyan/50 rounded-xl p-3 sm:p-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl backdrop-blur-md relative overflow-hidden transition-all duration-500">
+            <!-- AI Bot スキャンアニメーション背景 -->
+            <div id="bot-scan-overlay" class="absolute inset-0 bg-gradient-to-r from-cyber-cyan/10 via-cyber-pink/20 to-transparent pointer-events-none opacity-0 transition-opacity duration-300"></div>
+            
+            <div class="flex items-center gap-3.5 z-10 w-full md:w-auto">
+                <div class="relative flex-shrink-0">
+                    <div id="bot-avatar-bg" class="w-12 h-12 rounded-xl bg-cyber-panel border-2 border-cyber-cyan flex items-center justify-center text-cyber-cyan text-2xl shadow-lg glow-cyan transition-all duration-500">
+                        <i id="bot-avatar-icon" class="fa-solid fa-robot animate-pulse"></i>
+                    </div>
+                    <span class="absolute -bottom-1 -right-1 flex h-3 w-3">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyber-pink opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-cyber-pink"></span>
+                    </span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                        <span id="bot-name" class="font-orbitron font-bold text-xs text-cyber-cyan tracking-wider">SOUND_BOT_v3.08</span>
+                        <span id="bot-status-tag" class="text-[9px] px-2 py-0.5 rounded bg-cyber-cyan/20 text-cyber-cyan font-bold border border-cyber-cyan/40">ONLINE / 待機中</span>
+                    </div>
+                    <!-- Botの喋るセリフ -->
+                    <p id="bot-speech" class="text-xs sm:text-sm font-jp font-bold text-slate-200 mt-1 truncate transition-all duration-300">
+                        「マスター、どのようなサウンドを構築しますか？ Botにおまかせいただければ、最適な楽曲と音色パラメータを自動生成します。」
+                    </p>
+                </div>
+            </div>
+
+            <!-- Bot 自動生成アクションボタン -->
+            <div class="flex items-center gap-2.5 z-10 w-full md:w-auto justify-end flex-shrink-0">
+                <button id="bot-compose-btn" class="w-full md:w-auto bg-gradient-to-r from-cyber-cyan via-purple-600 to-cyber-pink text-black font-black text-xs sm:text-sm px-5 py-2.5 rounded-lg border border-white/40 shadow-lg hover:brightness-125 transition active:scale-95 flex items-center justify-center gap-2 glow-cyan">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> <span>Botにおまかせ自動作曲</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- メインコンテンツ -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-5 flex flex-col gap-5 z-10">
+
+        <!-- ビジュアル ＆ トランスポート -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            
+            <!-- オシロスコープ -->
+            <div id="vis-card" class="lg:col-span-5 bg-cyber-panel border border-cyber-cyan/40 rounded-xl p-3 relative overflow-hidden flex flex-col justify-between min-h-[150px] transition-colors duration-700">
+                <div class="flex justify-between items-center text-xs mb-1">
+                    <span id="vis-title" class="text-cyber-cyan font-bold flex items-center gap-1">
+                        <i class="fa-solid fa-wave-square"></i> 波形解析オシロスコープ
+                    </span>
+                    <span id="mode-badge" class="text-cyber-pink font-mono text-[10px] font-bold">● CYBER MODE</span>
+                </div>
+                <canvas id="visualizer" class="w-full h-28 bg-black/80 rounded border border-slate-800"></canvas>
+            </div>
+
+            <!-- トランスポート ＆ メイン制御 -->
+            <div id="control-card" class="lg:col-span-7 bg-cyber-panel border border-cyber-pink/40 rounded-xl p-4 flex flex-col justify-between gap-4 transition-colors duration-700">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    
+                    <!-- 再生 / 停止 -->
+                    <div class="flex items-center gap-2">
+                        <button id="play-btn" class="w-11 h-11 rounded-lg bg-cyber-cyan/20 border-2 border-cyber-cyan text-cyber-cyan text-lg flex items-center justify-center hover:bg-cyber-cyan hover:text-cyber-black transition glow-cyan active:scale-95">
+                            <i class="fa-solid fa-play"></i>
+                        </button>
+                        <button id="stop-btn" class="w-11 h-11 rounded-lg bg-cyber-pink/20 border-2 border-cyber-pink text-cyber-pink text-lg flex items-center justify-center hover:bg-cyber-pink hover:text-cyber-black transition glow-pink active:scale-95">
+                            <i class="fa-solid fa-square"></i>
+                        </button>
+                    </div>
+
+                    <!-- BPM テンポ -->
+                    <div class="flex items-center gap-3 bg-black/60 border border-slate-700 px-3 py-2 rounded-lg">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] text-slate-400 font-bold">テンポ (BPM)</span>
+                            <span id="bpm-display" class="font-orbitron text-lg text-cyber-cyan font-bold">120</span>
+                        </div>
+                        <input type="range" id="bpm-slider" min="50" max="180" value="120" class="w-24 sm:w-32">
+                    </div>
+
+                    <!-- パターン操作ボタン -->
+                    <div class="flex items-center gap-2">
+                        <button id="randomize-btn" class="bg-purple-900/40 border border-purple-500 text-purple-300 hover:bg-purple-600 hover:text-white text-xs font-bold px-3 py-2 rounded-lg transition flex items-center gap-1.5 active:scale-95">
+                            <i class="fa-solid fa-robot"></i> AIランダム
+                        </button>
+                        <button id="clear-btn" class="bg-slate-800 border border-slate-600 text-slate-300 hover:bg-rose-900 hover:text-white text-xs font-bold px-3 py-2 rounded-lg transition flex items-center gap-1.5 active:scale-95">
+                            <i class="fa-solid fa-trash"></i> クリア
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 音量 ＆ エフェクト -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-black/40 p-2.5 rounded-lg border border-slate-800">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-volume-high text-slate-400 text-xs"></i>
+                        <span class="text-xs font-bold text-slate-300 w-24">主音量 (Master)</span>
+                        <input type="range" id="master-vol" min="0" max="1" step="0.01" value="0.7" class="flex-1">
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i id="fx-icon" class="fa-solid fa-sliders text-cyber-cyan text-xs"></i>
+                        <span id="fx-label" class="text-xs font-bold text-slate-300 w-24">歪み (Distortion)</span>
+                        <input type="range" id="fx-param" min="0" max="100" value="20" class="flex-1">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ★ ゆったり和音モード専用: 和音・コード生成パネル ★ -->
+        <div id="chord-panel" class="hidden bg-wabon-panel border border-wabon-gold/40 rounded-xl p-4 shadow-xl flex-col gap-3 transition-colors duration-700">
+            <div class="flex justify-between items-center border-b border-wabon-gold/20 pb-2">
+                <h3 class="text-xs sm:text-sm text-wabon-gold font-bold font-serif flex items-center gap-2">
+                    <i class="fa-solid fa-music"></i> 伝統和律・コード生成器 (Traditional Scales & Chords)
+                </h3>
+                <span class="text-[10px] text-wabon-sakura font-bold">ワンタップで和音を展開</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 text-xs font-bold font-serif">
+                <button data-scale="hirajoshi" class="chord-btn bg-wabon-dark border border-wabon-gold/50 text-wabon-paper py-2 rounded hover:bg-wabon-gold hover:text-wabon-bg transition text-center">平調子 (Hirajoshi)</button>
+                <button data-scale="miyakobushi" class="chord-btn bg-wabon-dark border border-wabon-gold/50 text-wabon-paper py-2 rounded hover:bg-wabon-gold hover:text-wabon-bg transition text-center">都節 (Miyakobushi)</button>
+                <button data-scale="ryukyu" class="chord-btn bg-wabon-dark border border-wabon-gold/50 text-wabon-paper py-2 rounded hover:bg-wabon-gold hover:text-wabon-bg transition text-center">琉球音階 (Ryukyu)</button>
+                <button data-scale="minyo" class="chord-btn bg-wabon-dark border border-wabon-gold/50 text-wabon-paper py-2 rounded hover:bg-wabon-gold hover:text-wabon-bg transition text-center">民謡音階 (Minyo)</button>
+                <button data-scale="chillmaj" class="chord-btn bg-wabon-dark border border-wabon-gold/50 text-wabon-paper py-2 rounded hover:bg-wabon-gold hover:text-wabon-bg transition text-center">7thチル和音 (Maj7)</button>
+                <button data-scale="sus4" class="chord-btn bg-wabon-dark border border-wabon-gold/50 text-wabon-paper py-2 rounded hover:bg-wabon-gold hover:text-wabon-bg transition text-center">幽玄の響き (Sus4)</button>
+            </div>
+        </div>
+
+        <!-- 16ステップ シーケンサー グリッド -->
+        <div id="seq-card" class="bg-cyber-panel border border-cyber-cyan/40 rounded-xl p-4 shadow-2xl flex flex-col gap-3 transition-colors duration-700">
+            <div class="flex flex-wrap justify-between items-center border-b border-slate-800 pb-2 gap-2">
+                <h2 id="seq-title" class="text-xs sm:text-sm text-cyber-cyan font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-border-all"></i> 16ステップ・マルチトラック・シーケンサー
+                </h2>
+                <span id="seq-subtitle" class="text-[11px] text-slate-400 font-bold">全8トラック音階編集</span>
+            </div>
+
+            <!-- トラック・グリッド (8トラック) -->
+            <div id="sequencer-grid" class="flex flex-col gap-2 overflow-x-auto pb-2"></div>
+        </div>
+
+        <!-- パラメータ調整パネル -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            
+            <!-- メイン音色 モジュール -->
+            <div id="param-card-1" class="bg-cyber-panel border border-cyber-cyan/30 rounded-xl p-4 flex flex-col gap-3 transition-colors duration-700">
+                <div class="flex items-center justify-between border-b border-slate-700 pb-2">
+                    <h3 id="p1-title" class="text-xs sm:text-sm text-cyber-cyan font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-wave-square"></i> オシレーター / リード
+                    </h3>
+                </div>
+
+                <div class="space-y-2 text-xs font-bold">
+                    <div class="flex justify-between">
+                        <label id="p1-label1" class="text-slate-400">フィルターカットオフ</label>
+                        <span id="p1-val1" class="font-mono text-cyber-cyan">2500 Hz</span>
+                    </div>
+                    <input type="range" id="param-cutoff" min="100" max="10000" step="10" value="2500" class="w-full">
+
+                    <div class="flex justify-between">
+                        <label id="p1-label2" class="text-slate-400">レゾナンス / 共鳴</label>
+                        <span id="p1-val2" class="font-mono text-cyber-cyan">3.0</span>
+                    </div>
+                    <input type="range" id="param-res" min="0.1" max="15" step="0.1" value="3" class="w-full">
+                </div>
+            </div>
+
+            <!-- ベース / 伴奏 モジュール -->
+            <div id="param-card-2" class="bg-cyber-panel border border-cyber-pink/30 rounded-xl p-4 flex flex-col gap-3 transition-colors duration-700">
+                <div class="flex items-center justify-between border-b border-slate-700 pb-2">
+                    <h3 id="p2-title" class="text-xs sm:text-sm text-cyber-pink font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-bolt"></i> サブベース / 重低音
+                    </h3>
+                </div>
+
+                <div class="space-y-2 text-xs font-bold">
+                    <div class="flex justify-between">
+                        <label class="text-slate-400">ベース・カットオフ</label>
+                        <span id="p2-val1" class="font-mono text-cyber-pink">800 Hz</span>
+                    </div>
+                    <input type="range" id="param-bass-cutoff" min="50" max="3000" step="10" value="800" class="w-full">
+
+                    <div class="flex justify-between">
+                        <label class="text-slate-400">余韻・サステイン</label>
+                        <span id="p2-val2" class="font-mono text-cyber-pink">0.30秒</span>
+                    </div>
+                    <input type="range" id="param-bass-decay" min="0.05" max="2.5" step="0.05" value="0.3" class="w-full">
+                </div>
+            </div>
+
+            <!-- DSP 空間エフェクト -->
+            <div id="param-card-3" class="bg-cyber-panel border border-cyber-purple/40 rounded-xl p-4 flex flex-col gap-3 transition-colors duration-700">
+                <div class="flex items-center justify-between border-b border-slate-700 pb-2">
+                    <h3 id="p3-title" class="text-xs sm:text-sm text-purple-400 font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-microchip"></i> 空間エフェクト (Space FX)
+                    </h3>
+                </div>
+
+                <div class="space-y-2 text-xs font-bold">
+                    <div class="flex justify-between">
+                        <label class="text-slate-400">ディレイ (Echo)</label>
+                        <span id="p3-val1" class="font-mono text-purple-400">30%</span>
+                    </div>
+                    <input type="range" id="param-delay" min="0" max="0.8" step="0.05" value="0.3" class="w-full">
+
+                    <div class="flex justify-between">
+                        <label class="text-slate-400">温かみのある残響 (Reverb)</label>
+                        <span id="p3-val2" class="font-mono text-purple-400">40%</span>
+                    </div>
+                    <input type="range" id="param-reverb" min="0" max="0.9" step="0.05" value="0.4" class="w-full">
+                </div>
+            </div>
+        </div>
+
+        <!-- リアルタイム演奏キーボード -->
+        <div id="keyboard-card" class="bg-cyber-panel border border-cyber-cyan/30 rounded-xl p-4 flex flex-col gap-3 transition-colors duration-700">
+            <div class="flex justify-between items-center">
+                <h3 id="kbd-title" class="text-xs sm:text-sm text-cyber-cyan font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-keyboard"></i> リアルタイム演奏用 鍵盤 (日本語音名表記 & QWERTY対応)
+                </h3>
+                <span class="text-[10px] text-slate-400 hidden sm:inline font-mono">PCキー: [A-K, W-O]</span>
+            </div>
+
+            <!-- 鍵盤エリア -->
+            <div id="keyboard" class="flex justify-center items-start h-32 overflow-x-auto p-2 bg-black/60 rounded border border-slate-800 relative select-none"></div>
+        </div>
+
+    </main>
+
+    <footer class="border-t border-slate-900 bg-black/80 py-3 text-center text-xs text-slate-500 font-mono mt-auto z-10">
+        <p id="footer-text">CYBER & CHILL DUAL SYNTHESIS // WEB AUDIO API ENGINE</p>
+    </footer>
+
+    <!-- JS ロジック -->
+    <script>
+        // Web Audio Context
+        let audioCtx = null;
+        let masterGain = null;
+        let analyser = null;
+        let distortionNode = null;
+        let delayNode = null;
+        let delayFeedbackNode = null;
+
+        // システム状態
+        let currentMode = 'cyber'; // 'cyber' or 'wabon'
+        let isPlaying = false;
+        let currentStep = 0;
+        let bpm = 120;
+        let stepInterval = null;
+
+        // サイバーパンク トラック定義
+        const TRACKS_CYBER = [
+            { id: 'synth_high', name: 'リード1 (高音 C5)', type: 'synth', note: 523.25, color: 'cyan' },
+            { id: 'synth_mid',  name: 'リード2 (中音 A4)', type: 'synth', note: 440.00, color: 'cyan' },
+            { id: 'synth_low',  name: 'リード3 (低音 E4)', type: 'synth', note: 329.63, color: 'cyan' },
+            { id: 'bass_high',  name: 'ベース1 (高音 A2)', type: 'bass',  note: 110.00, color: 'pink' },
+            { id: 'bass_low',   name: 'ベース2 (重低音 E2)', type: 'bass', note: 82.41, color: 'pink' },
+            { id: 'kick',       name: '電脳キック (Kick)', type: 'perc', subType: 'kick', color: 'yellow' },
+            { id: 'snare',      name: 'スネアドラム (Snare)', type: 'perc', subType: 'snare', color: 'yellow' },
+            { id: 'sfx',        name: 'サイバーSFX / ハット', type: 'perc', subType: 'sfx', color: 'purple' }
+        ];
+
+        // ゆったり和音モード トラック定義
+        const TRACKS_WABON = [
+            { id: 'koto_high',  name: '箏・和琴 (高音 C5)', type: 'koto', note: 523.25, color: 'sakura' },
+            { id: 'koto_mid',   name: '箏・和琴 (中音 A4)', type: 'koto', note: 440.00, color: 'sakura' },
+            { id: 'shakuhachi', name: '尺八・篠笛パッド', type: 'flute', note: 329.63, color: 'uguisu' },
+            { id: 'sho_pad',    name: '笙・アンビエント和音', type: 'sho', note: 220.00, color: 'gold' },
+            { id: 'w_keys',     name: 'Lo-Fi エレピ (Keys)', type: 'keys', note: 164.81, color: 'uguisu' },
+            { id: 'taiko_low',  name: '和太鼓・低音 (Taiko)', type: 'perc', subType: 'taiko', color: 'moss' },
+            { id: 'kotsuzumi',  name: '小鼓・ポン (Tsuzumi)', type: 'perc', subType: 'tsuzumi', color: 'moss' },
+            { id: 'rin_chime',  name: '風鈴・おりん (Rin)', type: 'perc', subType: 'rin', color: 'sakura' }
+        ];
+
+        // 16ステップ グリッドデータ
+        let grid = Array(8).fill(null).map(() => Array(16).fill(false));
+
+        // ピアノ鍵盤定義
+        const PIANO_NOTES = [
+            { note: 'ド',   freq: 261.63, key: 'a', isBlack: false },
+            { note: 'ド#',  freq: 277.18, key: 'w', isBlack: true },
+            { note: 'レ',   freq: 293.66, key: 's', isBlack: false },
+            { note: 'レ#',  freq: 311.13, key: 'e', isBlack: true },
+            { note: 'ミ',   freq: 329.63, key: 'd', isBlack: false },
+            { note: 'ファ', freq: 349.23, key: 'f', isBlack: false },
+            { note: 'ファ#', freq: 369.99, key: 't', isBlack: true },
+            { note: 'ソ',   freq: 392.00, key: 'g', isBlack: false },
+            { note: 'ソ#',  freq: 415.30, key: 'y', isBlack: true },
+            { note: 'ラ',   freq: 440.00, key: 'h', isBlack: false },
+            { note: 'ラ#',  freq: 466.16, key: 'u', isBlack: true },
+            { note: 'シ',   freq: 493.88, key: 'j', isBlack: false },
+            { note: '高ド', freq: 523.25, key: 'k', isBlack: false },
+            { note: '高ド#', freq: 554.37, key: 'o', isBlack: true },
+            { note: '高レ', freq: 587.33, key: 'l', isBlack: false }
+        ];
+
+        // サイバーパンク プリセット (12種類に拡張)
+        const PRESETS_CYBER = {
+            c_synthwave: {
+                name: "1. ネオ東京・シンセウェーブ", bpm: 118, cutoff: 3200, fx: 20,
+                pattern: [
+                    [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
+                    [0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0],
+                    [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
+                    [1,0,0,1, 1,0,0,1, 1,0,0,1, 1,0,0,1],
+                    [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
+                    [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
+                    [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
+                    [0,1,1,1, 0,1,1,1, 0,1,1,1, 0,1,1,1]
+                ]
+            },
+            c_industrial: {
+                name: "2. ディストピア・インダストリアル", bpm: 132, cutoff: 1800, fx: 65,
+                pattern: [
+                    [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,1,0,0],
+                    [0,0,0,0, 1,0,0,1, 0,0,1,0, 0,0,0,0],
+                    [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
+                    [1,1,0,1, 1,1,0,1, 1,1,0,1, 1,1,1,0],
+                    [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
+                    [1,0,0,1, 0,0,1,0, 1,0,0,0, 0,1,0,0],
+                    [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,1,0],
+                    [1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1]
+                ]
+            },
+            c_bladerunner: {
+                name: "3. ブレードランナー・ヴェイパー", bpm: 85, cutoff: 1200, fx: 10,
+                pattern: [
+                    [1,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
+                    [0,0,0,0, 1,0,0,0, 0,0,0,0, 0,0,0,0],
+                    [0,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
+                    [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
+                    [1,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
+                    [1,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
+                    [0,0,0,0, 1,0,0,0, 0,0,0,0, 0,0,0,0],
+                    [0,0,1,0, 0,0,0,0, 0,0,1,0, 0,0,0,0]
+                ]
+            },
+            c_cyberdive: {
+                name: "4. 電脳ダイブ・ハイパードライブ", bpm: 145, cutoff: 4500, fx: 40,
+                pattern: [
+                    [1,0,1,1, 1,0,1,0, 1,0,1,1, 1,1,0,0],
+                    [0,1,0,0, 0,1,0,0, 0,1,0,0, 0,1,0,1],
+                    [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
+                    [1,1,1,1, 0,0,0,0, 1,1,1,1, 0,0,0,0],
+                    [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
+                    [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
+                    [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
+                    [1,1,0,1, 1,1,0,1, 1,1,0,1, 1,1,0,1]
+                ]
+            },
+            c_nightcity: {
+                name: "5. ナイトシティ・チェイス", bpm: 128, cutoff: 3800, fx: 35,
+                pattern: [
+                    [1,0,0,1, 0,0,1,0, 1,0,0,1, 0,0,1,0],
+                    [0,0,1,0, 1,0,0,0, 0,0,1,0, 1,0,0,0],
+                    [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
+                    [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0],
+                    [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
+                    [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
+                    [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
+                    [0,1,0,1, 0,1,0,1, 0,1,0,1, 0,1,0,1]
+                ]
+            },
+            c_hacker: {
+                name: "6. ハッカー・ブレイクビーツ", bpm: 135, cutoff: 2800, fx: 50,
+                pattern: [
+                    [1,0,0,1, 0,1,0,0, 1,0,0,1, 0,1,0,0],
+                    [0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0],
+                    [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
+                    [1,1,0,0, 1,1,0,0, 1,1,0,0, 1,1,0,0],
+                    [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
+                    [1,0,0,0, 0,0,1,0, 0,1,0,0, 0,0,0,0],
+                    [0,0,0,0, 1,0,0,0, 0,0,1,0, 1,0,0,0],
+                    [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0]
+                ]
+            },
+            c_megacorp: {
+                name: "7. メガコーポ・アンビエント", bpm: 90, cutoff: 1100, fx: 15,
+                pattern: [
+                    [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
+                    [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
+                    [0,0,1,0, 0,0,0,0, 0,0,1,0, 0,0,0,0],
+                    [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
+                    [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
+                    [1,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
+                    [0,0,0,0, 1,0,0,0, 0,0,0,0, 0,0,0,0],
+                    [0,0,0,1, 0,0,0,0, 0,0,0,1, 0,0,0,0]
+                ]
+            },
+            c_android: {
+                name: "8. アンドロイド・アルペジオ", bpm: 124, cutoff: 3500, fx: 25,
+                pattern: [
+                    [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
+                    [0,1,0,0, 0,1,0,0, 0,1,0,0, 0,1,0,0],
+                    [0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0],
+                    [0,0,0,1, 0,0,0,1, 0,0,0,1, 0,0,0,1],
+                    [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
+                    [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
+                    [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
+                    [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0]
+                ]
+            },
+            c_glitch: {
+                name: "9. サイバーパンク・グリッチ", bpm: 140, cutoff: 5000, fx: 75,
+                pattern: [
+                    [1,1,0,1, 0,1,1,0, 1,0,1,1, 0,1,0,1],
+                    [0,1,1,0, 1,0,0,1, 0,1,1,0, 1,0,1,0],
+                    [1,0,0,1, 0,0,1,0, 1,0,0,1, 0,0,1,0],
+                    [1,1,1,1, 0,1,0,1, 1,1,1,1, 1,0,1,0],
+                    [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
+                    [1,0,1,0, 0,1,0,0, 1,0,0,0, 0,1,1,0],
+                    [0,1,0,0, 1,0,0,1, 0,0,1,0, 1,0,0,1],
+                    [1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1]
+                ]
+            },
+            c_neurofunk: {
+                name: "10. ニューロ・ファンク", bpm: 155, cutoff: 2600, fx: 55,
+                pattern: [
+                    [1,0,0,1, 0,0,0,0, 1,0,0,1, 0,0,0,0],
+                    [0,0,0,0, 1,0,0,1, 0,0,0,0, 1,0,1,0],
+                    [0,0,1,0, 0,0,0,0, 0,0,1,0, 0,0,0,0],
+                    [1,1,0,1, 1,0,1,1, 1,1,0,1, 1,0,1,1],
+                    [1,0,0,0, 0,0,1,0, 1,0,0,0, 0,0,0,0],
+                    [1,0,0,0, 0,0,0,0, 0,0,1,0, 0,0,0,0],
+                    [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
+                    [1,0,1,1, 1,0,1,1, 1,0,1,1, 1,0,1,1]
+                ]
+            },
+            c_darkwave: {
+                name: "11. ダークウェーブ・ゴシック", bpm: 110, cutoff: 1900, fx: 30,
+                pattern: [
+                    [1,0,0,0, 0,0,1,0, 1,0,0,0, 0,0,0,0],
+                    [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
+                    [0,0,1,0, 0,0,0,0, 0,0,1,0, 0,0,0,0],
+                    [1,0,0,1, 1,0,0,1, 1,0,0,1, 1,0,0,1],
+                    [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
+                    [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
+                    [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
+                    [0,1,0,1, 0,1,0,1, 0,1,0,1, 0,1,0,1]
+                ]
+            },
+            c_quantum: {
+                name: "12. 量子マトリックス", bpm: 120, cutoff: 4200, fx: 45,
+                pattern: [
+                    [1,0,1,0, 0,1,0,1, 1,0,1,0, 0,1,0,1],
+                    [0,1,0,1, 1,0,1,0, 0,1,0,1, 1,0,1,0],
+                    [1,0,0,1, 0,1,1,0, 1,0,0,1, 0,1,1,0],
+                    [0,0,1,1, 1,1,0,0, 0,0,1,1, 1,1,0,0],
+                    [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
+                    [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
+                    [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
+                    [1,1,1,1, 0,0,0,0, 1,1,1,1, 0,0,0,0]
+                ]
+            }
+        };
+
+        // ★ AI Sound Bot コメントリスト ★
+        const BOT_COMMENTS_CYBER = [
+            "「マスター、感情データをスキャン完了。サイバーパンク・ディストーション感度MAX。デンジャラスなグリッチビートを生成します。」",
+            "「ネオ東京のナイトクラブ信号を受信。重低音サブベースと高速リードフレーズを再構築しました。」",
+            "「電脳空間ダイブモード起動。攻撃的なシンセサイザーとノイズスネアのハーモニーを出力します。」",
+            "「メガコーポの未公開トラックデータをディープラーニング。量子アルペジオ・シーケンスを展開しました。」",
+            "「回路オーバーヒート直前！超高速ハイパードライブ・トラックをAI自動生成完了しました。」"
+        ];
+
+        const BOT_COMMENTS_WABON = [
+            "「ユーザーの脳波バランスを分析。今回の感情データに基づき、幽玄なチル和音パターンを再構成しました。」",
+            "「京都の雨音と竹林の静寂アルゴリズムを融合。心安らぐ琴と尺八のアンビエントトラックをお届けします。」",
+            "「夕暮れの神社と風鈴の残響データを解析。和風Lo-Fiコード進行と太鼓の拍子を自動生成しました。」",
+            "「禅寺の朝霧データをシンセサイズ完了。平調子音階によるゆったりとした和音パターンを展開します。」",
+            "「月夜の光量をパラメーターに変換。美しく澄んだ琴と篠笛のメロディを構築しました。」"
+        ];
+
+        // AI Bot による自動作曲（Bot におまかせ）
+        function executeBotComposition() {
+            initAudio();
+            const speechEl = document.getElementById('bot-speech');
+            const overlay = document.getElementById('bot-scan-overlay');
+            const avatarBg = document.getElementById('bot-avatar-bg');
+            const avatarIcon = document.getElementById('bot-avatar-icon');
+            const statusTag = document.getElementById('bot-status-tag');
+            const btn = document.getElementById('bot-compose-btn');
+
+            // 1. Bot解析アニメーション開始
+            overlay.classList.remove('opacity-0');
+            overlay.classList.add('opacity-100');
+            statusTag.innerText = 'ANALYZING / 解析中';
+            statusTag.className = 'text-[9px] px-2 py-0.5 rounded bg-cyber-pink/30 text-cyber-pink font-bold border border-cyber-pink/50 animate-pulse';
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            const scanMessages = [
+                "【AI】感情波形および空間残響パラメータを測定中...",
+                "【AI】ニューラルネットワークで旋律パターンを最適化中...",
+                "【AI】音色フィルターおよびディレイエフェクトをアジャスト中...",
+                "【AI】完成！楽曲シーケンスの展開を開始します。"
+            ];
+
+            let step = 0;
+            const scanInterval = setInterval(() => {
+                speechEl.innerText = scanMessages[step];
+                step++;
+                if (step >= scanMessages.length) {
+                    clearInterval(scanInterval);
+                    finishBotComposition();
+                }
+            }, 350);
+        }
+
+        function finishBotComposition() {
+            const speechEl = document.getElementById('bot-speech');
+            const overlay = document.getElementById('bot-scan-overlay');
+            const statusTag = document.getElementById('bot-status-tag');
+            const btn = document.getElementById('bot-compose-btn');
+
+            // 2. ランダムにモード決定 (50% Cyber / 50% Wabon)
+            const targetMode = Math.random() < 0.5 ? 'cyber' : 'wabon';
+            if (currentMode !== targetMode) {
+                switchMode(targetMode);
+            }
+
+            // 3. パラメータのAI生成
+            let comment = "";
+            if (targetMode === 'cyber') {
+                const bpmVal = Math.floor(Math.random() * (160 - 100 + 1)) + 100;
+                const cutoffVal = Math.floor(Math.random() * (6000 - 1500 + 1)) + 1500;
+                const fxVal = Math.floor(Math.random() * 80);
+
+                document.getElementById('bpm-slider').value = bpmVal;
+                updateBpm(bpmVal);
+                document.getElementById('param-cutoff').value = cutoffVal;
+                document.getElementById('p1-val1').innerText = `${cutoffVal} Hz`;
+                document.getElementById('param-param').value = fxVal;
+
+                // ランダムなメロディ・リズムアルゴリズム生成
+                for (let r = 0; r < 8; r++) {
+                    const density = (r === 0 || r === 3 || r === 5) ? 0.45 : 0.25; // リードやキックは密度高め
+                    for (let c = 0; c < 16; c++) {
+                        grid[r][c] = Math.random() < density;
+                    }
+                }
+
+                comment = BOT_COMMENTS_CYBER[Math.floor(Math.random() * BOT_COMMENTS_CYBER.length)];
+            } else {
+                const bpmVal = Math.floor(Math.random() * (85 - 58 + 1)) + 58;
+                const cutoffVal = Math.floor(Math.random() * (3500 - 1000 + 1)) + 1000;
+                const fxVal = Math.floor(Math.random() * 30);
+
+                document.getElementById('bpm-slider').value = bpmVal;
+                updateBpm(bpmVal);
+                document.getElementById('param-cutoff').value = cutoffVal;
+                document.getElementById('p1-val1').innerText = `${cutoffVal} Hz`;
+                document.getElementById('param-param').value = fxVal;
+
+                // 和風ゆったりコード・アルペジオ構造のアルゴリズム生成
+                for (let r = 0; r < 8; r++) {
+                    const isKotoOrPad = r < 5;
+                    for (let c = 0; c < 16; c++) {
+                        if (isKotoOrPad) {
+                            grid[r][c] = (c % 4 === 0) || (Math.random() < 0.2);
+                        } else {
+                            grid[r][c] = (c % 8 === 0) && (Math.random() < 0.6);
+                        }
+                    }
+                }
+
+                comment = BOT_COMMENTS_WABON[Math.floor(Math.random() * BOT_COMMENTS_WABON.length)];
+            }
+
+            // 4. UIの更新 & 自動再生開始
+            renderSequencer();
+            if (!isPlaying) {
+                startSequencer();
+            }
+
+            speechEl.innerText = comment;
+            overlay.classList.add('opacity-0');
+            overlay.classList.remove('opacity-100');
+            statusTag.innerText = 'ONLINE / 作曲完了';
+            statusTag.className = 'text-[9px] px-2 py-0.5 rounded bg-cyber-cyan/20 text-cyber-cyan font-bold border border-cyber-cyan/40';
+            btn.disabled = false;
+            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+
+        // モード切り替え（サイバーパンク ⇄ ゆったり和音）
+        function switchMode(newMode) {
+            if (currentMode === newMode) return;
+            currentMode = newMode;
+
+            const body = document.getElementById('app-body');
+            const bgEffect = document.getElementById('bg-effect');
+            const btnCyber = document.getElementById('btn-mode-cyber');
+            const btnWabon = document.getElementById('btn-mode-wabon');
+            const presetSelect = document.getElementById('preset-select');
+            const chordPanel = document.getElementById('chord-panel');
+
+            // AI Bot パネルのカラーリング変更
+            const botAvatarBg = document.getElementById('bot-avatar-bg');
+            const botName = document.getElementById('bot-name');
+
+            if (newMode === 'wabon') {
+                // 和風 Lo-Fi Chill モードへ切替
+                body.className = 'mode-wabon h-full bg-wabon-bg text-wabon-paper font-jp select-none overflow-x-hidden flex flex-col transition-colors duration-700 washi-bg';
+                bgEffect.className = 'pointer-events-none fixed inset-0 z-50 opacity-10 washi-bg transition-all duration-700';
+
+                btnWabon.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300 bg-wabon-sakura text-wabon-bg shadow-lg';
+                btnCyber.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300 text-slate-400 hover:text-cyber-cyan';
+
+                document.getElementById('app-title').innerHTML = `幽玄和音 <span class="font-serif text-xs text-wabon-sakura font-normal ml-2">Japanese Traditional Lo-Fi Chill Synth</span>`;
+                document.getElementById('vis-title').innerHTML = `<i class="fa-solid fa-fan"></i> 幽玄音流・波形解析器`;
+                document.getElementById('mode-badge').innerText = '● ゆったり和音モード';
+                document.getElementById('mode-badge').className = 'text-wabon-sakura font-serif text-[10px] font-bold';
+
+                botAvatarBg.className = 'w-12 h-12 rounded-xl bg-wabon-dark border-2 border-wabon-sakura flex items-center justify-center text-wabon-sakura text-2xl shadow-lg glow-sakura transition-all duration-500';
+                botName.className = 'font-orbitron font-bold text-xs text-wabon-sakura tracking-wider';
+                botName.innerText = 'CHILL_WABON_BOT_v3.08';
+
+                chordPanel.classList.remove('hidden');
+                chordPanel.classList.add('flex');
+
+                // プリセットオプション差し替え
+                presetSelect.innerHTML = '';
+                Object.keys(PRESETS_WABON).forEach(k => {
+                    const opt = document.createElement('option');
+                    opt.value = k;
+                    opt.innerText = PRESETS_WABON[k].name;
+                    presetSelect.appendChild(opt);
+                });
+
+                applyPreset('w_bamboo');
+            } else {
+                // サイバーパンク モードへ切替
+                body.className = 'mode-cyber h-full bg-cyber-black text-slate-200 font-jp select-none overflow-x-hidden flex flex-col transition-colors duration-700';
+                bgEffect.className = 'pointer-events-none fixed inset-0 scanlines z-50 opacity-40 transition-all duration-700';
+
+                btnCyber.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300 bg-cyber-cyan text-cyber-black shadow-lg';
+                btnWabon.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300 text-slate-400 hover:text-wabon-sakura';
+
+                document.getElementById('app-title').innerHTML = `CYBER_SYNTH <span class="font-jp text-xs text-cyber-cyan font-normal ml-2">超電脳音響構造体</span>`;
+                document.getElementById('vis-title').innerHTML = `<i class="fa-solid fa-wave-square"></i> 波形解析オシロスコープ`;
+                document.getElementById('mode-badge').innerText = '● CYBER MODE';
+                document.getElementById('mode-badge').className = 'text-cyber-pink font-mono text-[10px] font-bold';
+
+                botAvatarBg.className = 'w-12 h-12 rounded-xl bg-cyber-panel border-2 border-cyber-cyan flex items-center justify-center text-cyber-cyan text-2xl shadow-lg glow-cyan transition-all duration-500';
+                botName.className = 'font-orbitron font-bold text-xs text-cyber-cyan tracking-wider';
+                botName.innerText = 'SOUND_BOT_v3.08';
+
+                chordPanel.classList.add('hidden');
+                chordPanel.classList.remove('flex');
+
+                // プリセットオプション差し替え
+                presetSelect.innerHTML = '';
+                Object.keys(PRESETS_CYBER).forEach(k => {
+                    const opt = document.createElement('option');
+                    opt.value = k;
+                    opt.innerText = PRESETS_CYBER[k].name;
+                    presetSelect.appendChild(opt);
+                });
+
+                applyPreset('c_synthwave');
+            }
+
+            renderSequencer();
+            renderKeyboard();
+        }
+
+        // イベントリスナー初期化
+        window.addEventListener('DOMContentLoaded', () => {
+            renderSequencer();
+            renderKeyboard();
+
+            document.getElementById('btn-mode-cyber').addEventListener('click', () => switchMode('cyber'));
+            document.getElementById('btn-mode-wabon').addEventListener('click', () => switchMode('wabon'));
+
+            // ★ Bot におまかせ自動作曲ボタン ★
+            document.getElementById('bot-compose-btn').addEventListener('click', executeBotComposition);
+            document.getElementById('randomize-btn').addEventListener('click', executeBotComposition);
+
+            document.getElementById('audio-init-btn').addEventListener('click', initAudio);
+            document.getElementById('play-btn').addEventListener('click', () => {
+                if (isPlaying) stopSequencer();
+                else startSequencer();
+            });
+            document.getElementById('stop-btn').addEventListener('click', stopSequencer);
+
+            document.getElementById('bpm-slider').addEventListener('input', (e) => updateBpm(parseInt(e.target.value)));
+
+            document.getElementById('master-vol').addEventListener('input', (e) => {
+                if (masterGain) masterGain.gain.value = parseFloat(e.target.value);
+            });
+
+            document.getElementById('preset-select').addEventListener('change', (e) => applyPreset(e.target.value));
+
+            document.querySelectorAll('.chord-btn').forEach(btn => {
+                btn.addEventListener('click', () => applyChordScale(btn.dataset.scale));
+            });
+
+            document.getElementById('clear-btn').addEventListener('click', () => {
+                grid = Array(8).fill(null).map(() => Array(16).fill(false));
+                renderSequencer();
+            });
+
+            window.addEventListener('keydown', (e) => {
+                if (e.repeat || e.target.tagName === 'INPUT') return;
+                const matchNote = PIANO_NOTES.find(n => n.key === e.key.toLowerCase());
+                if (matchNote) {
+                    initAudio();
+                    triggerSound({ type: currentMode === 'cyber' ? 'synth' : 'koto', note: matchNote.freq });
+                }
+            });
+
+            // 初期プリセット
+            switchMode('cyber');
+        });
+    </script>
+</body>
+</html>
