@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>21個のif()構文デモ</title>
+  <style>
+    body {
+      font-family: "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      color: #eaeaea;
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 8px;
+      color: #00d2ff;
+    }
+    .sub {
+      color: #aaa;
+      margin-bottom: 30px;
+      font-size: 0.95rem;
+    }
+    button {
+      background: #00d2ff;
+      color: #1a1a2e;
+      border: none;
+      padding: 14px 32px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: 0.2s;
+      box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 210, 255, 0.5);
+    }
+    #result {
+      margin-top: 40px;
+      padding: 24px 32px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      font-size: 1.3rem;
+      min-width: 280px;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      line-height: 1.6;
+    }
+    #number {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #00d2ff;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+  <h1>21個の if() 構文デモ</h1>
+  <p class="sub">ボタンを押すと 0〜20 の乱数が生成され、<br>21個の if 文でメッセージが決まります</p>
+  
+  <button onclick="generate()">乱数を生成して判定する</button>
+  
+  <div id="result">
+    <div id="number">？</div>
+    <div id="message">ボタンを押してください</div>
+  </div>
+
+  <script>
+    function generate() {
+      // 0〜20 の乱数を生成
+      const n = Math.floor(Math.random() * 21);
+      
+      let msg = "";
+
+      // ===== ここから 21個の if() 構文 =====
+      if (n === 0) {
+        msg = "ゼロ！始まりの数字だね";
+      }
+      if (n === 1) {
+        msg = "いち！一番最初の数字";
+      }
+      if (n === 2) {
+        msg = "に！偶数の始まり";
+      }
+      if (n === 3) {
+        msg = "さん！三角の数字";
+      }
+      if (n === 4) {
+        msg = "よん！四角い感じ";
+      }
+      if (n === 5) {
+        msg = "ご！手の指の数";
+      }
+      if (n === 6) {
+        msg = "ろく！サイコロの最大";
+      }
+      if (n === 7) {
+        msg = "なな！ラッキーセブン！";
+      }
+      if (n === 8) {
+        msg = "はち！末広がりで縁起がいい";
+      }
+      if (n === 9) {
+        msg = "きゅう！野球のイニング数";
+      }
+      if (n === 10) {
+        msg = "じゅう！ちょうど10点満点";
+      }
+      if (n === 11) {
+        msg = "じゅういち！ゾロ目だ！";
+      }
+      if (n === 12) {
+        msg = "じゅうに！1ダースの数";
+      }
+      if (n === 13) {
+        msg = "じゅうさん！アンラッキー？それともラッキー？";
+      }
+      if (n === 14) {
+        msg = "じゅうよん！バレンタインデーの日";
+      }
+      if (n === 15) {
+        msg = "じゅうご！十五夜のお月さん";
+      }
+      if (n === 16) {
+        msg = "じゅうろく！Sweet Sixteen";
+      }
+      if (n === 17) {
+        msg = "じゅうなな！ちょっと珍しい数字";
+      }
+      if (n === 18) {
+        msg = "じゅうはち！成人の年齢だった頃";
+      }
+      if (n === 19) {
+        msg = "じゅうきゅう！もうすぐ20";
+      }
+      if (n === 20) {
+        msg = "にじゅう！ちょうど20！キリがいいね";
+      }
+      // ===== 21個の if() ここまで =====
+
+      // 画面に表示
+      document.getElementById("number").textContent = n;
+      document.getElementById("message").textContent = msg;
+    }
+  </script>
+</body>
+</html>
